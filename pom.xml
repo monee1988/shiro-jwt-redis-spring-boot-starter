@@ -90,12 +90,12 @@
         </plugins>
     </build>
 
-    <!--<profiles>
+    <profiles>
         <profile>
             <id>sonatype-oss-release</id>
             <build>
                 <plugins>
-                    &lt;!&ndash; Source &ndash;&gt;
+                    <!-- Source -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
@@ -110,7 +110,7 @@
                             </execution>
                         </executions>
                     </plugin>
-                    &lt;!&ndash; Javadoc &ndash;&gt;
+                    <!-- Javadoc -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
@@ -128,7 +128,7 @@
                             </execution>
                         </executions>
                     </plugin>
-                    &lt;!&ndash; GPG &ndash;&gt;
+                    <!-- GPG -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
@@ -156,6 +156,6 @@
                 </plugins>
             </build>
         </profile>
-    </profiles>-->
+    </profiles>
 
 </project>
