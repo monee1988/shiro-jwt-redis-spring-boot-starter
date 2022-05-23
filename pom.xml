@@ -45,6 +45,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <springboot.version>2.6.7</springboot.version>
         <shiro.spring.version>1.9.0</shiro.spring.version>
+        <maven.test.skip>true</maven.test.skip>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
     </properties>
 
     <dependencies>
