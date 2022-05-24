@@ -20,7 +20,6 @@ import java.util.Map;
  * @version 1.0
  * @date 2022-05-20 17:30
  */
-@Component
 public class JwtUtils {
 
     //指定一个token过期时间（毫秒）

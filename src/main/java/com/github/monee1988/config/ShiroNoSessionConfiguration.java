@@ -1,5 +1,6 @@
 package com.github.monee1988.config;
 
+import com.github.monee1988.jwt.JwtUtils;
 import com.github.monee1988.shiro.CustomSessionManager;
 import com.github.monee1988.shiro.NoSessionDefaultSubjectFactory;
 import org.apache.shiro.authc.Authenticator;
@@ -13,6 +14,7 @@ import org.apache.shiro.spring.web.config.ShiroFilterChainDefinition;
 import org.apache.shiro.spring.web.config.ShiroWebConfiguration;
 import org.apache.shiro.web.filter.authc.BearerHttpAuthenticationFilter;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -29,6 +31,13 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class ShiroNoSessionConfiguration extends AbstractShiroConfiguration{
 
+
+    //指定一个token过期时间（毫秒） //20分钟
+    @Value("#{ @environment['shiro.jwt.expireTime'] ?:  20 * 60 * 1000 }")
+    private long expireTime;
+
+    @Value("#{ @environment['shiro.jwt.tokenSecret'] ?: 'monee1988' }")
+    private String tokenSecret;
     /**
      * Subject factory subject factory.
      * 告诉shiro不创建内置的session
@@ -40,6 +49,14 @@ public class ShiroNoSessionConfiguration extends AbstractShiroConfiguration{
     public SubjectFactory subjectFactory(){
         return new NoSessionDefaultSubjectFactory();
     }
+
+    @Bean
+    @ConditionalOnProperty(name = "shiro.web.session.disabled", havingValue = "true")
+    public JwtUtils jwtUtils(){
+
+        return new JwtUtils(expireTime,tokenSecret);
+    }
+
 
     /**
      * 关闭 ShiroDAO 功能
