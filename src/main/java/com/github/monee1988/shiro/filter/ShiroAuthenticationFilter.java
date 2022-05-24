@@ -7,6 +7,7 @@ import org.apache.shiro.web.filter.authc.BearerHttpAuthenticationFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -15,40 +16,43 @@ import java.io.IOException;
 
 /**
  * 需要认证的url经过该过滤器
+ *
  * @author monee1988
  * @version 1.0
  * @date 2022-05-14 12:51
  */
 public class ShiroAuthenticationFilter extends BearerHttpAuthenticationFilter {
 
+    @Resource
+    protected JwtUtils jwtUtils;
+
+    private String tokenExpiredUrl;
+
+    private String unsupportedToken;
+
     public ShiroAuthenticationFilter() {
         super();
     }
 
+    public ShiroAuthenticationFilter(String tokenExpiredUrl, String unsupportedTokenUrl) {
+        this();
+        this.tokenExpiredUrl = tokenExpiredUrl;
+        this.unsupportedToken = unsupportedTokenUrl;
+    }
+
     @Override
-    protected boolean isAccessAllowed(ServletRequest servletRequest, ServletResponse servletResponse, Object mappedValue){
+    protected boolean isAccessAllowed(ServletRequest servletRequest, ServletResponse servletResponse, Object mappedValue) {
 
         //创建 bearerToken
-        BearerToken bearerToken = (BearerToken) createToken(servletRequest,servletResponse);
+        BearerToken bearerToken = (BearerToken) createToken(servletRequest, servletResponse);
+        if (bearerToken.getToken() != null) {
+            //非法的token处理方式
+            if (isIllegalToken(servletRequest, servletResponse, bearerToken)) {
+                return true;
+            }
 
-       try {
-           if(JwtUtils.isExpire(bearerToken.getToken())){
-               WebUtils.redirectToSavedRequest(servletRequest, servletResponse, "/tokenExpired");
-               return true;
-           }
-       }catch (JWTDecodeException e) {
-           try {
-               WebUtils.redirectToSavedRequest(servletRequest, servletResponse, "/unsupportedToken");
-           } catch (IOException ex) {
-               ex.printStackTrace();
-           }
-           return true;
-       } catch (IOException e) {
-           e.printStackTrace();
-       }
-        if(bearerToken.getToken() != null){
             try {
-                return super.executeLogin(servletRequest,servletResponse);
+                return super.executeLogin(servletRequest, servletResponse);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -57,10 +61,31 @@ public class ShiroAuthenticationFilter extends BearerHttpAuthenticationFilter {
         return false;
     }
 
+    private boolean isIllegalToken(ServletRequest servletRequest, ServletResponse servletResponse, BearerToken bearerToken) {
+        try {
+            if (jwtUtils.isExpire(bearerToken.getToken())) {
+                //跳转过期token类型 通知URL
+                WebUtils.redirectToSavedRequest(servletRequest, servletResponse, tokenExpiredUrl);
+                return true;
+            }
+        } catch (JWTDecodeException e) {
+            try {
+                //跳转不支持的token类型 通知URL
+                WebUtils.redirectToSavedRequest(servletRequest, servletResponse, unsupportedToken);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     @Override
     protected boolean onAccessDenied(ServletRequest request, ServletResponse response) {
-        HttpServletResponse res = (HttpServletResponse)response;
-        HttpServletRequest req = (HttpServletRequest)request;
+        HttpServletResponse res = (HttpServletResponse) response;
+        HttpServletRequest req = (HttpServletRequest) request;
         return false;
     }
 
@@ -69,14 +94,14 @@ public class ShiroAuthenticationFilter extends BearerHttpAuthenticationFilter {
 
         HttpServletRequest request = WebUtils.toHttp(servletRequest);
         HttpServletResponse response = WebUtils.toHttp(servletResponse);
-        response.setHeader("Content-Type","application/json;charset=UTF-8");
+        response.setHeader("Content-Type", "application/json;charset=UTF-8");
         response.setHeader("Access-Control-Allow-Credentials", "true");
         response.setHeader("Access-control-Allow-Origin", request.getHeader("Origin"));
         response.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS,PUT,DELETE");
         response.setHeader("Access-Control-Allow-Headers", request.getHeader("Access-Control-Request-Headers"));
 
         //放行 OPTIONS 请求
-        if(RequestMethod.OPTIONS.name().equalsIgnoreCase(request.getMethod())){
+        if (RequestMethod.OPTIONS.name().equalsIgnoreCase(request.getMethod())) {
             return true;
         }
 

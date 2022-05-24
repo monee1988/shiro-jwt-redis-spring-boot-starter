@@ -1,5 +1,6 @@
 package com.github.monee1988.config;
 
+import com.github.monee1988.jwt.JwtUtils;
 import com.github.monee1988.shiro.UserModularRealmAuthenticator;
 import com.github.monee1988.shiro.filter.ShiroAuthenticationFilter;
 import org.apache.shiro.authc.Authenticator;
@@ -12,9 +13,11 @@ import org.apache.shiro.spring.web.config.DefaultShiroFilterChainDefinition;
 import org.apache.shiro.spring.web.config.ShiroFilterChainDefinition;
 import org.apache.shiro.spring.web.config.ShiroWebConfiguration;
 import org.apache.shiro.web.filter.authc.BearerHttpAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -40,8 +43,6 @@ public class AbstractShiroConfiguration {
     @Value("#{ @environment['shiro.logout'] ?: '/logout' }")
     protected String logoutUrl;
 
-
-
     public ShiroFilterChainDefinition shiroFilterChainDefinition() {
 
         DefaultShiroFilterChainDefinition chainDefinition = new DefaultShiroFilterChainDefinition();
@@ -64,7 +65,7 @@ public class AbstractShiroConfiguration {
      */
     public BearerHttpAuthenticationFilter bearerHttpAuthenticationFilter(){
 
-        return new ShiroAuthenticationFilter();
+        return new ShiroAuthenticationFilter(tokenExpiredUrl,unsupportedTokenUrl);
     }
 
     /**

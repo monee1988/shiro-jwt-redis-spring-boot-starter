@@ -114,4 +114,5 @@ public class ShiroNoSessionConfiguration extends AbstractShiroConfiguration{
     public Authenticator authenticator() {
         return super.authenticator();
     }
+
 }
