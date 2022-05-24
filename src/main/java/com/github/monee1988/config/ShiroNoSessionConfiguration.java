@@ -10,11 +10,17 @@ import org.apache.shiro.mgt.DefaultSessionStorageEvaluator;
 import org.apache.shiro.mgt.DefaultSubjectDAO;
 import org.apache.shiro.mgt.SubjectDAO;
 import org.apache.shiro.mgt.SubjectFactory;
+import org.apache.shiro.session.mgt.eis.EnterpriseCacheSessionDAO;
+import org.apache.shiro.session.mgt.eis.SessionDAO;
 import org.apache.shiro.spring.web.config.ShiroFilterChainDefinition;
 import org.apache.shiro.spring.web.config.ShiroWebConfiguration;
 import org.apache.shiro.web.filter.authc.BearerHttpAuthenticationFilter;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
+import org.crazycake.shiro.RedisCacheManager;
+import org.crazycake.shiro.RedisSessionDAO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -27,17 +33,33 @@ import org.springframework.context.annotation.Configuration;
  * @version 1.0
  * @date 2022-05-23 20:26
  */
-@Configuration
+@Configuration()
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class ShiroNoSessionConfiguration extends AbstractShiroConfiguration{
 
 
     //指定一个token过期时间（毫秒） //20分钟
-    @Value("#{ @environment['shiro.jwt.expireTime'] ?:  20 * 60 * 1000 }")
+    @Value("#{ @environment['shiro.jwt.expireTime'] ?:  1200000 }")
     private long expireTime;
 
     @Value("#{ @environment['shiro.jwt.tokenSecret'] ?: 'monee1988' }")
     private String tokenSecret;
+
+
+    private RedisSessionDAO redisSessionDAO;
+
+    private RedisCacheManager redisCacheManager;
+
+    @Autowired(required = false)
+    public void setRedisSessionDAO(RedisSessionDAO redisSessionDAO) {
+        this.redisSessionDAO = redisSessionDAO;
+    }
+
+    @Autowired(required = false)
+    public void setRedisCacheManager(RedisCacheManager redisCacheManager) {
+        this.redisCacheManager = redisCacheManager;
+    }
+
     /**
      * Subject factory subject factory.
      * 告诉shiro不创建内置的session
@@ -45,13 +67,12 @@ public class ShiroNoSessionConfiguration extends AbstractShiroConfiguration{
      * @return the subject factory
      */
     @Bean
-    @ConditionalOnProperty(name = "shiro.web.session.disabled", havingValue = "true")
+    @ConditionalOnProperty(name = "shiro.web.session.enabled", havingValue = "false")
     public SubjectFactory subjectFactory(){
         return new NoSessionDefaultSubjectFactory();
     }
 
     @Bean
-    @ConditionalOnProperty(name = "shiro.web.session.disabled", havingValue = "true")
     public JwtUtils jwtUtils(){
 
         return new JwtUtils(expireTime,tokenSecret);
@@ -64,7 +85,7 @@ public class ShiroNoSessionConfiguration extends AbstractShiroConfiguration{
      * @return subject dao
      */
     @Bean
-    @ConditionalOnProperty(name = "shiro.web.session.disabled", havingValue = "true")
+    @ConditionalOnProperty(name = "shiro.web.session.enabled", havingValue = "false")
     public SubjectDAO subjectDAO() {
         DefaultSubjectDAO subjectDAO = new DefaultSubjectDAO();
         DefaultSessionStorageEvaluator defaultSessionStorageEvaluator = new DefaultSessionStorageEvaluator();
@@ -81,15 +102,34 @@ public class ShiroNoSessionConfiguration extends AbstractShiroConfiguration{
      * @return SessionManager default web session manager
      */
     @Bean
-    @ConditionalOnProperty(name = "shiro.web.session.disabled", havingValue = "true")
+    @ConditionalOnProperty(name = "shiro.web.session.enabled", havingValue = "true")
     public DefaultWebSessionManager sessionManager(){
-
         DefaultWebSessionManager sessionManager = new CustomSessionManager();
+        sessionManager.setSessionDAO(sessionDAO());
         sessionManager.setSessionValidationSchedulerEnabled(true);
         sessionManager.setSessionIdUrlRewritingEnabled(false);
         sessionManager.setSessionValidationInterval(DefaultWebSessionManager.DEFAULT_SESSION_VALIDATION_INTERVAL);
-
         return sessionManager;
+
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "shiro.web.session.enabled", havingValue = "true")
+    public SessionDAO sessionDAO() {
+        if(redisSessionDAO!=null){
+            return redisSessionDAO;
+        }
+        return new EnterpriseCacheSessionDAO();
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = {"shiro.cache.enabled"},matchIfMissing = true)
+    @Override
+    public CacheManager cacheManager() {
+        if(redisCacheManager!=null){
+            return redisCacheManager;
+        }
+        return super.cacheManager();
     }
 
     @Bean
@@ -110,13 +150,6 @@ public class ShiroNoSessionConfiguration extends AbstractShiroConfiguration{
     @Override
     public FilterRegistrationBean registration(BearerHttpAuthenticationFilter filter) {
         return super.registration(filter);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    @Override
-    public CacheManager cacheManager() {
-        return super.cacheManager();
     }
 
     @Bean

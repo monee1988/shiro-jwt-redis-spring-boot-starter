@@ -25,7 +25,7 @@ import java.util.List;
  * @version 1.0
  * @date 2022-05-23 20:26
  */
-public class AbstractShiroConfiguration {
+public class AbstractShiroConfiguration{
 
     //登陆URL
     @Value("#{ @environment['shiro.loginUrl'] ?: '/login' }")
@@ -106,7 +106,9 @@ public class AbstractShiroConfiguration {
      * @return authorizer authorizer
      */
     public Authorizer authorizer() {
+
         ModularRealmAuthorizer authorizer = new ModularRealmAuthorizer();
+
         return authorizer;
     }
 

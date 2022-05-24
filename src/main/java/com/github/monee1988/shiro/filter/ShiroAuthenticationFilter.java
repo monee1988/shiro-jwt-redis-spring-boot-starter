@@ -83,9 +83,12 @@ public class ShiroAuthenticationFilter extends BearerHttpAuthenticationFilter {
     }
 
     @Override
-    protected boolean onAccessDenied(ServletRequest request, ServletResponse response) {
-        HttpServletResponse res = (HttpServletResponse) response;
-        HttpServletRequest req = (HttpServletRequest) request;
+    protected boolean onAccessDenied(ServletRequest servletRequest, ServletResponse servletResponse) {
+        HttpServletResponse response = (HttpServletResponse) servletResponse;
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+
+
+
         return false;
     }
 
