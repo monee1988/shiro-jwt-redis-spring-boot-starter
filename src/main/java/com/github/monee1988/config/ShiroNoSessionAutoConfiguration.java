@@ -37,7 +37,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration()
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @EnableConfigurationProperties({JwtUtilProperties.class,ShiroFilterChainProperties.class})
-public class ShiroNoSessionConfiguration extends AbstractShiroConfiguration{
+public class ShiroNoSessionAutoConfiguration extends AbstractShiroConfiguration{
 
     private JwtUtilProperties jwtUtilProperties;
 
