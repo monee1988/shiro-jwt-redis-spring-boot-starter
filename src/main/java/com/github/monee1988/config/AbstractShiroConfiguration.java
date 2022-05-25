@@ -1,6 +1,7 @@
 package com.github.monee1988.config;
 
 import com.github.monee1988.jwt.JwtUtils;
+import com.github.monee1988.shiro.ShiroFilterChainProperties;
 import com.github.monee1988.shiro.UserModularRealmAuthenticator;
 import com.github.monee1988.shiro.filter.ShiroAuthenticationFilter;
 import org.apache.shiro.authc.Authenticator;
@@ -25,38 +26,27 @@ import java.util.List;
  * @version 1.0
  * @date 2022-05-23 20:26
  */
-public class AbstractShiroConfiguration{
+public abstract class AbstractShiroConfiguration{
 
-    //登陆URL
-    @Value("#{ @environment['shiro.loginUrl'] ?: '/login' }")
-    protected String loginUrl;
+    public abstract ShiroFilterChainProperties getFilterChainProperties();
 
-    //token过期URL
-    @Value("#{ @environment['shiro.tokenExpired'] ?: '/tokenExpired' }")
-    protected String tokenExpiredUrl;
-
-    //不支持的token类型URL
-    @Value("#{ @environment['shiro.unsupportedToken'] ?: '/unsupportedToken' }")
-    protected String unsupportedTokenUrl;
-
-    //登出URL
-    @Value("#{ @environment['shiro.logout'] ?: '/logout' }")
-    protected String logoutUrl;
+    public abstract JwtUtils getJwtUtils();
 
     public ShiroFilterChainDefinition shiroFilterChainDefinition() {
 
         DefaultShiroFilterChainDefinition chainDefinition = new DefaultShiroFilterChainDefinition();
         // 哪些请求可以匿名访问
-        chainDefinition.addPathDefinition(loginUrl,"anon");             //登陆接口
-        chainDefinition.addPathDefinition(tokenExpiredUrl,"anon");      //token过期提示接口
-        chainDefinition.addPathDefinition(unsupportedTokenUrl,"anon");  //不支持的token类型提示接口
+        chainDefinition.addPathDefinition(getFilterChainProperties().getLoginUrl(),"anon");             //登陆接口
+        chainDefinition.addPathDefinition(getFilterChainProperties().getTokenExpiredUrl(),"anon");      //token过期提示接口
+        chainDefinition.addPathDefinition(getFilterChainProperties().getUnsupportedTokenUrl(),"anon");  //不支持的token类型提示接口
         // 登出功能
-        chainDefinition.addPathDefinition(logoutUrl,"anon");
+        chainDefinition.addPathDefinition(getFilterChainProperties().getLogoutUrl(),"anon");
         // 除了以上的请求外，其它请求都需要登录
         chainDefinition.addPathDefinition("/**", "bearerHttpAuthenticationFilter");
 
         return chainDefinition;
     }
+
 
     /**
      * Shiro authentication filter shiro authentication filter.
@@ -65,7 +55,7 @@ public class AbstractShiroConfiguration{
      */
     public BearerHttpAuthenticationFilter bearerHttpAuthenticationFilter(){
 
-        return new ShiroAuthenticationFilter(tokenExpiredUrl,unsupportedTokenUrl);
+        return new ShiroAuthenticationFilter(getJwtUtils(),getFilterChainProperties().getTokenExpiredUrl(),getFilterChainProperties().getUnsupportedTokenUrl());
     }
 
     /**

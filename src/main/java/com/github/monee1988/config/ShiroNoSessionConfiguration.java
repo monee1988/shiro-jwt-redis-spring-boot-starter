@@ -1,8 +1,10 @@
 package com.github.monee1988.config;
 
+import com.github.monee1988.jwt.JwtUtilProperties;
 import com.github.monee1988.jwt.JwtUtils;
 import com.github.monee1988.shiro.CustomSessionManager;
 import com.github.monee1988.shiro.NoSessionDefaultSubjectFactory;
+import com.github.monee1988.shiro.ShiroFilterChainProperties;
 import org.apache.shiro.authc.Authenticator;
 import org.apache.shiro.authz.Authorizer;
 import org.apache.shiro.cache.CacheManager;
@@ -19,11 +21,10 @@ import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.crazycake.shiro.RedisCacheManager;
 import org.crazycake.shiro.RedisSessionDAO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,30 +36,16 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration()
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+@EnableConfigurationProperties({JwtUtilProperties.class,ShiroFilterChainProperties.class})
 public class ShiroNoSessionConfiguration extends AbstractShiroConfiguration{
 
+    private JwtUtilProperties jwtUtilProperties;
 
-    //指定一个token过期时间（毫秒） //20分钟
-    @Value("#{ @environment['shiro.jwt.expireTime'] ?:  1200000 }")
-    private long expireTime;
-
-    @Value("#{ @environment['shiro.jwt.tokenSecret'] ?: 'monee1988' }")
-    private String tokenSecret;
-
+    private ShiroFilterChainProperties shiroFilterChainProperties;
 
     private RedisSessionDAO redisSessionDAO;
 
     private RedisCacheManager redisCacheManager;
-
-    @Autowired(required = false)
-    public void setRedisSessionDAO(RedisSessionDAO redisSessionDAO) {
-        this.redisSessionDAO = redisSessionDAO;
-    }
-
-    @Autowired(required = false)
-    public void setRedisCacheManager(RedisCacheManager redisCacheManager) {
-        this.redisCacheManager = redisCacheManager;
-    }
 
     /**
      * Subject factory subject factory.
@@ -75,9 +62,8 @@ public class ShiroNoSessionConfiguration extends AbstractShiroConfiguration{
     @Bean
     public JwtUtils jwtUtils(){
 
-        return new JwtUtils(expireTime,tokenSecret);
+        return new JwtUtils(jwtUtilProperties.getExpireTime(),jwtUtilProperties.getTokenSecret());
     }
-
 
     /**
      * 关闭 ShiroDAO 功能
@@ -110,7 +96,6 @@ public class ShiroNoSessionConfiguration extends AbstractShiroConfiguration{
         sessionManager.setSessionIdUrlRewritingEnabled(false);
         sessionManager.setSessionValidationInterval(DefaultWebSessionManager.DEFAULT_SESSION_VALIDATION_INTERVAL);
         return sessionManager;
-
     }
 
     @Bean
@@ -132,11 +117,22 @@ public class ShiroNoSessionConfiguration extends AbstractShiroConfiguration{
         return super.cacheManager();
     }
 
+    @Override
+    public ShiroFilterChainProperties getFilterChainProperties() {
+        return shiroFilterChainProperties;
+    }
+
     @Bean
     @ConditionalOnMissingBean
     @Override
     public ShiroFilterChainDefinition shiroFilterChainDefinition() {
         return super.shiroFilterChainDefinition();
+    }
+
+    @Override
+    @Bean
+    public JwtUtils getJwtUtils() {
+        return new JwtUtils(jwtUtilProperties.getExpireTime(), jwtUtilProperties.getTokenSecret());
     }
 
     @Bean
@@ -163,6 +159,24 @@ public class ShiroNoSessionConfiguration extends AbstractShiroConfiguration{
     @Override
     public Authenticator authenticator() {
         return super.authenticator();
+    }
+
+    @Autowired(required = false)
+    public void setRedisSessionDAO(RedisSessionDAO redisSessionDAO) {
+        this.redisSessionDAO = redisSessionDAO;
+    }
+
+    @Autowired(required = false)
+    public void setRedisCacheManager(RedisCacheManager redisCacheManager) {
+        this.redisCacheManager = redisCacheManager;
+    }
+    @Autowired
+    public void setJwtUtilProperties(JwtUtilProperties jwtUtilProperties) {
+        this.jwtUtilProperties = jwtUtilProperties;
+    }
+    @Autowired
+    public void setShiroFilterChainProperties(ShiroFilterChainProperties shiroFilterChainProperties) {
+        this.shiroFilterChainProperties = shiroFilterChainProperties;
     }
 
 }

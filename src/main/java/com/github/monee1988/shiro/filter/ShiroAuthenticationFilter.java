@@ -7,7 +7,6 @@ import org.apache.shiro.web.filter.authc.BearerHttpAuthenticationFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import javax.annotation.Resource;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -23,8 +22,7 @@ import java.io.IOException;
  */
 public class ShiroAuthenticationFilter extends BearerHttpAuthenticationFilter {
 
-    @Resource
-    protected JwtUtils jwtUtils;
+    private JwtUtils jwtUtils;
 
     private String tokenExpiredUrl;
 
@@ -34,8 +32,9 @@ public class ShiroAuthenticationFilter extends BearerHttpAuthenticationFilter {
         super();
     }
 
-    public ShiroAuthenticationFilter(String tokenExpiredUrl, String unsupportedTokenUrl) {
+    public ShiroAuthenticationFilter(JwtUtils jwtUtils,String tokenExpiredUrl, String unsupportedTokenUrl) {
         this();
+        this.jwtUtils = jwtUtils;
         this.tokenExpiredUrl = tokenExpiredUrl;
         this.unsupportedToken = unsupportedTokenUrl;
     }

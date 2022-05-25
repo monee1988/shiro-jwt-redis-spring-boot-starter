@@ -4,13 +4,11 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTDecodeException;
+import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,10 +20,9 @@ import java.util.Map;
  */
 public class JwtUtils {
 
-    //指定一个token过期时间（毫秒）
-    private long expireTime = 20 * 60 * 1000;  //20分钟
+    private long expireTime;
 
-    private String tokenSecret = "monee1988";
+    private String tokenSecret;
 
     public JwtUtils(long expireTime,String tokenSecret) {
         this.expireTime = expireTime;
@@ -40,26 +37,40 @@ public class JwtUtils {
         this.tokenSecret = tokenSecret;
     }
 
-    public String createJwtTokenByUser(Map<String,String> sysUser) {
+    /**
+     * Genetatet jwt token string.
+     * 生成token
+     *
+     * @param payload the payload
+     * @return the string
+     */
+    public String createJwtToken(Map<String,String> payload) {
 
         Date date = new Date(System.currentTimeMillis() + expireTime);
-        Algorithm algorithm = Algorithm.HMAC256(tokenSecret);    //使用密钥进行哈希
 
-        JWTCreator.Builder jwt = JWT.create();
+        JWTCreator.Builder builder = JWT.create();
+        // Header
+        Map<String,Object> a =  new HashMap<>(payload);
+        builder.withHeader(a);
+        // 构建payload
+        payload.forEach((k,v) -> {
+            builder.withClaim(k,v)
+        ;});
+        // 过期时间
+        builder.withExpiresAt(date);
 
-        for (Map.Entry<String, String> entry : sysUser.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            jwt = jwt.withClaim(key, value);
-        }
-        return jwt.withExpiresAt(date).sign(algorithm);
+        return builder.sign(Algorithm.HMAC256(tokenSecret));
     }
 
 
     /**
+     * Verify token boolean.
      * 校验token是否正确
+     *
+     * @param token the token
+     * @return the boolean
      */
-    public boolean verifyTokenOfUser(String token)  {
+    public boolean verifyToken(String token)  {
 
         Algorithm algorithm = Algorithm.HMAC256(tokenSecret);
 
@@ -70,28 +81,21 @@ public class JwtUtils {
         return true;
     }
 
-    /**
-     * 在token中获取到username信息
-     */
-    public String getUserKeyValue(String key,String token) {
-        try {
-            DecodedJWT jwt = JWT.decode(token);
-            return jwt.getClaim(key).asString();
-        } catch (JWTDecodeException e) {
-            return null;
-        }
-    }
 
-    public Map<String,String> recreateUserFromToken(String token, List<String> keyList) {
-        Map<String,String> user = new HashMap<>();
-        keyList.forEach(e->{
-            user.put(e,getUserKeyValue(e,token));
-        });
-        return user;
+    public Map<String,String> resolveJwtToken(String token) {
+        DecodedJWT jwt = JWT.decode(token);
+        Map<String, Claim> stringClaimMap =jwt.getClaims();
+        Map<String, String> result = new HashMap<>();
+        stringClaimMap.forEach((k,v) -> result.put(k,v.asString()));
+        return result;
+
     }
 
     /**
-     * 判断是否过期
+     * 判断token是否过期
+     *
+     * @param token the token
+     * @return the boolean
      */
     public boolean isExpire(String token) {
         DecodedJWT jwt = JWT.decode(token);

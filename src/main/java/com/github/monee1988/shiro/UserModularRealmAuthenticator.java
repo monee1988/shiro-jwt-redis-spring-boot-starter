@@ -28,14 +28,14 @@ public class UserModularRealmAuthenticator extends ModularRealmAuthenticator {
         // 登录类型对应的所有Realm
         Collection<Realm> typeRealms = new ArrayList<>();
         for (Realm realm : realms) {
-            if (realm.supports(authenticationToken))
+            if (realm.supports(authenticationToken)){
                 typeRealms.add(realm);
+            }
         }
 
-        // 判断是单Realm还是多Realm
-        if (typeRealms.size() == 1)
+        if (typeRealms.size() == 1) {
             return doSingleRealmAuthentication(typeRealms.iterator().next(), authenticationToken);
-        else
-            return doMultiRealmAuthentication(typeRealms, authenticationToken);
+        }
+        return doMultiRealmAuthentication(typeRealms, authenticationToken);
     }
 }
