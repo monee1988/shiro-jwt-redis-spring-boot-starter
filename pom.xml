@@ -36,7 +36,7 @@
     <scm>
         <url>https://github.com/monee1988/shiro-jwt-redis-spring-boot-starter</url>
         <connection>https://github.com/monee1988/shiro-jwt-redis-spring-boot-starter.git</connection>
-        <developerConnection>https://github.com/monee1988/shiro-jwt-redis-spring-boot-starter/timeline-mq</developerConnection>
+        <developerConnection>https://github.com/monee1988/shiro-jwt-redis-spring-boot-starter</developerConnection>
     </scm>
 
     <properties>
@@ -45,8 +45,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <springboot.version>2.6.7</springboot.version>
         <shiro.spring.version>1.9.0</shiro.spring.version>
-        <maven.test.skip>true</maven.test.skip>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
+        <shiro.redis.version>3.3.1</shiro.redis.version>
+        <java.jwt.version>3.19.2</java.jwt.version>
     </properties>
 
     <dependencies>
@@ -73,13 +73,13 @@
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
-            <version>3.19.2</version>
+            <version>${java.jwt.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.crazycake</groupId>
             <artifactId>shiro-redis</artifactId>
-            <version>3.3.1</version>
+            <version>${shiro.redis.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.shiro</groupId>
@@ -160,7 +160,9 @@
                                     <goal>jar</goal>
                                 </goals>
                                 <configuration>
-                                    <doclint>all,-missing</doclint>
+                                    <additionalOptions>
+                                        <additionalOption>-Xdoclint:none</additionalOption>
+                                    </additionalOptions>
                                 </configuration>
                             </execution>
                         </executions>
