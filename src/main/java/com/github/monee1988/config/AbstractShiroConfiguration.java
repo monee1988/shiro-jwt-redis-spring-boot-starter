@@ -1,5 +1,6 @@
 package com.github.monee1988.config;
 
+import com.github.monee1988.jwt.JwtUtil;
 import com.github.monee1988.jwt.impl.JwtUtilImpl;
 import com.github.monee1988.shiro.ShiroFilterChainProperties;
 import com.github.monee1988.shiro.UserModularRealmAuthenticator;
@@ -30,7 +31,7 @@ public abstract class AbstractShiroConfiguration{
 
     public abstract ShiroFilterChainProperties getFilterChainProperties();
 
-    public abstract JwtUtilImpl getJwtUtils();
+    public abstract JwtUtil getJwtUtil();
 
     public ShiroFilterChainDefinition shiroFilterChainDefinition() {
 
@@ -55,7 +56,7 @@ public abstract class AbstractShiroConfiguration{
      */
     public BearerHttpAuthenticationFilter bearerHttpAuthenticationFilter(){
 
-        return new ShiroAuthenticationFilter(getJwtUtils(),getFilterChainProperties().getTokenExpiredUrl(),getFilterChainProperties().getUnsupportedTokenUrl());
+        return new ShiroAuthenticationFilter(getJwtUtil(),getFilterChainProperties().getTokenExpiredUrl(),getFilterChainProperties().getUnsupportedTokenUrl());
     }
 
     /**

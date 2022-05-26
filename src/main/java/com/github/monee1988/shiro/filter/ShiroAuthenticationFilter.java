@@ -2,7 +2,6 @@ package com.github.monee1988.shiro.filter;
 
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.github.monee1988.jwt.JwtUtil;
-import com.github.monee1988.jwt.impl.JwtUtilImpl;
 import org.apache.shiro.authc.BearerToken;
 import org.apache.shiro.web.filter.authc.BearerHttpAuthenticationFilter;
 import org.apache.shiro.web.util.WebUtils;

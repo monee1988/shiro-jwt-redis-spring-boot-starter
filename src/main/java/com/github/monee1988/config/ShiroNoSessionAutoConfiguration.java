@@ -138,7 +138,7 @@ public class ShiroNoSessionAutoConfiguration extends AbstractShiroConfiguration{
 
     @Override
     @Bean
-    public JwtUtilImpl getJwtUtils() {
+    public JwtUtil getJwtUtil() {
         return new JwtUtilImpl(jwtUtilProperties.getExpireTime(), jwtUtilProperties.getTokenSecret());
     }
 
