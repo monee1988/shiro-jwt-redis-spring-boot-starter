@@ -49,7 +49,6 @@ public class ShiroAuthenticationFilter extends BearerHttpAuthenticationFilter {
             if (isIllegalToken(servletRequest, servletResponse, bearerToken.getToken())) {
                 return true;
             }
-
             try {
                 return super.executeLogin(servletRequest, servletResponse);
             } catch (Exception e) {

@@ -1,5 +1,6 @@
 package com.github.monee1988.shiro;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -16,6 +17,7 @@ import java.util.Collection;
  * @version 1.0
  * @date 2022-05-19 15:05
  */
+@Slf4j
 public class UserModularRealmAuthenticator extends ModularRealmAuthenticator {
 
     @Override
@@ -34,8 +36,10 @@ public class UserModularRealmAuthenticator extends ModularRealmAuthenticator {
         }
 
         if (typeRealms.size() == 1) {
+            log.debug("UserModularRealmAuthenticator use one relam");
             return doSingleRealmAuthentication(typeRealms.iterator().next(), authenticationToken);
         }
+        log.debug("UserModularRealmAuthenticator use {} relams",typeRealms.size());
         return doMultiRealmAuthentication(typeRealms, authenticationToken);
     }
 }

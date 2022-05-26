@@ -10,6 +10,7 @@ import com.github.monee1988.jwt.JwtUtil;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -89,7 +90,7 @@ public class JwtUtilImpl implements JwtUtil {
     public Map<String,String> resolveJwtToken(String token) {
         DecodedJWT jwt = JWT.decode(token);
         Map<String, Claim> stringClaimMap =jwt.getClaims();
-        Map<String, String> result = new HashMap<>();
+        Map<String, String> result = new LinkedHashMap<>();
         stringClaimMap.forEach((k,v) -> result.put(k,v.asString()));
         return result;
 
