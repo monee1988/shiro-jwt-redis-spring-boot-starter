@@ -1,6 +1,7 @@
 package com.github.monee1988.shiro.filter;
 
 import com.auth0.jwt.exceptions.JWTDecodeException;
+import com.github.monee1988.jwt.JwtUtil;
 import com.github.monee1988.jwt.impl.JwtUtilImpl;
 import org.apache.shiro.authc.BearerToken;
 import org.apache.shiro.web.filter.authc.BearerHttpAuthenticationFilter;
@@ -22,7 +23,7 @@ import java.io.IOException;
  */
 public class ShiroAuthenticationFilter extends BearerHttpAuthenticationFilter {
 
-    private JwtUtilImpl jwtUtilImpl;
+    private JwtUtil jwtUtil;
 
     private String tokenExpiredUrl;
 
@@ -32,9 +33,9 @@ public class ShiroAuthenticationFilter extends BearerHttpAuthenticationFilter {
         super();
     }
 
-    public ShiroAuthenticationFilter(JwtUtilImpl jwtUtilImpl, String tokenExpiredUrl, String unsupportedTokenUrl) {
+    public ShiroAuthenticationFilter(JwtUtil jwtUtil, String tokenExpiredUrl, String unsupportedTokenUrl) {
         this();
-        this.jwtUtilImpl = jwtUtilImpl;
+        this.jwtUtil = jwtUtil;
         this.tokenExpiredUrl = tokenExpiredUrl;
         this.unsupportedToken = unsupportedTokenUrl;
     }
@@ -61,7 +62,7 @@ public class ShiroAuthenticationFilter extends BearerHttpAuthenticationFilter {
 
     private boolean isIllegalToken(ServletRequest servletRequest, ServletResponse servletResponse, String bearerToken) {
         try {
-            if (jwtUtilImpl.isExpire(bearerToken)) {
+            if (jwtUtil.isExpire(bearerToken)) {
                 //跳转过期token类型 通知URL
                 WebUtils.redirectToSavedRequest(servletRequest, servletResponse, tokenExpiredUrl);
                 return true;
