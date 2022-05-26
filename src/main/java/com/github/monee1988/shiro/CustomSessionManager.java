@@ -1,5 +1,9 @@
 package com.github.monee1988.shiro;
 
+import org.apache.shiro.authz.AuthorizationException;
+import org.apache.shiro.session.Session;
+import org.apache.shiro.session.mgt.SessionContext;
+import org.apache.shiro.session.mgt.SessionKey;
 import org.apache.shiro.web.servlet.ShiroHttpServletRequest;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.apache.shiro.web.util.WebUtils;
@@ -36,16 +40,25 @@ public class CustomSessionManager extends DefaultWebSessionManager {
     @Override
     protected Serializable getSessionId(ServletRequest request, ServletResponse response) {
         // 只有设置 AUTHORIZATION 才能正确识别用户信息
-        String sessionId = WebUtils.toHttp(request).getHeader(AUTHORIZATION_HEADER);
-        if (!ObjectUtils.isEmpty(sessionId)) {
+        String authorization = WebUtils.toHttp(request).getHeader(AUTHORIZATION_HEADER);
+        if (!ObjectUtils.isEmpty(authorization)) {
             request.setAttribute(ShiroHttpServletRequest.REFERENCED_SESSION_ID_SOURCE, REFERENCED_SESSION_ID_SOURCE);
-            request.setAttribute(ShiroHttpServletRequest.REFERENCED_SESSION_ID, sessionId);
             request.setAttribute(ShiroHttpServletRequest.REFERENCED_SESSION_ID_IS_VALID, Boolean.TRUE);
-            return sessionId;
+            String[] authTokens = authorization.split(" ");
+            String token="";
+            if (authTokens.length > 1) {
+                token = authTokens[1];
+            }else {
+                token = authTokens[0];
+            }
+            request.setAttribute(ShiroHttpServletRequest.REFERENCED_SESSION_ID, token);
+            return token;
         } else {
             return super.getSessionId(request, response);
         }
     }
+
+
 
 
 }

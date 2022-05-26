@@ -1,7 +1,7 @@
 package com.github.monee1988.shiro.filter;
 
 import com.auth0.jwt.exceptions.JWTDecodeException;
-import com.github.monee1988.jwt.JwtUtils;
+import com.github.monee1988.jwt.impl.JwtUtilImpl;
 import org.apache.shiro.authc.BearerToken;
 import org.apache.shiro.web.filter.authc.BearerHttpAuthenticationFilter;
 import org.apache.shiro.web.util.WebUtils;
@@ -22,7 +22,7 @@ import java.io.IOException;
  */
 public class ShiroAuthenticationFilter extends BearerHttpAuthenticationFilter {
 
-    private JwtUtils jwtUtils;
+    private JwtUtilImpl jwtUtilImpl;
 
     private String tokenExpiredUrl;
 
@@ -32,9 +32,9 @@ public class ShiroAuthenticationFilter extends BearerHttpAuthenticationFilter {
         super();
     }
 
-    public ShiroAuthenticationFilter(JwtUtils jwtUtils,String tokenExpiredUrl, String unsupportedTokenUrl) {
+    public ShiroAuthenticationFilter(JwtUtilImpl jwtUtilImpl, String tokenExpiredUrl, String unsupportedTokenUrl) {
         this();
-        this.jwtUtils = jwtUtils;
+        this.jwtUtilImpl = jwtUtilImpl;
         this.tokenExpiredUrl = tokenExpiredUrl;
         this.unsupportedToken = unsupportedTokenUrl;
     }
@@ -46,7 +46,7 @@ public class ShiroAuthenticationFilter extends BearerHttpAuthenticationFilter {
         BearerToken bearerToken = (BearerToken) createToken(servletRequest, servletResponse);
         if (bearerToken.getToken() != null) {
             //非法的token处理方式
-            if (isIllegalToken(servletRequest, servletResponse, bearerToken)) {
+            if (isIllegalToken(servletRequest, servletResponse, bearerToken.getToken())) {
                 return true;
             }
 
@@ -60,9 +60,9 @@ public class ShiroAuthenticationFilter extends BearerHttpAuthenticationFilter {
         return false;
     }
 
-    private boolean isIllegalToken(ServletRequest servletRequest, ServletResponse servletResponse, BearerToken bearerToken) {
+    private boolean isIllegalToken(ServletRequest servletRequest, ServletResponse servletResponse, String bearerToken) {
         try {
-            if (jwtUtils.isExpire(bearerToken.getToken())) {
+            if (jwtUtilImpl.isExpire(bearerToken)) {
                 //跳转过期token类型 通知URL
                 WebUtils.redirectToSavedRequest(servletRequest, servletResponse, tokenExpiredUrl);
                 return true;
@@ -86,8 +86,6 @@ public class ShiroAuthenticationFilter extends BearerHttpAuthenticationFilter {
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         HttpServletRequest request = (HttpServletRequest) servletRequest;
 
-
-
         return false;
     }
 
@@ -106,7 +104,7 @@ public class ShiroAuthenticationFilter extends BearerHttpAuthenticationFilter {
         if (RequestMethod.OPTIONS.name().equalsIgnoreCase(request.getMethod())) {
             return true;
         }
-
         return super.preHandle(servletRequest, servletResponse);
     }
+
 }

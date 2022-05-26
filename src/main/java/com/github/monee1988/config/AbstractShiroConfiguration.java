@@ -1,6 +1,6 @@
 package com.github.monee1988.config;
 
-import com.github.monee1988.jwt.JwtUtils;
+import com.github.monee1988.jwt.impl.JwtUtilImpl;
 import com.github.monee1988.shiro.ShiroFilterChainProperties;
 import com.github.monee1988.shiro.UserModularRealmAuthenticator;
 import com.github.monee1988.shiro.filter.ShiroAuthenticationFilter;
@@ -14,12 +14,12 @@ import org.apache.shiro.spring.web.config.DefaultShiroFilterChainDefinition;
 import org.apache.shiro.spring.web.config.ShiroFilterChainDefinition;
 import org.apache.shiro.spring.web.config.ShiroWebConfiguration;
 import org.apache.shiro.web.filter.authc.BearerHttpAuthenticationFilter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.util.ObjectUtils;
 
-import javax.annotation.Resource;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author monee1988
@@ -30,7 +30,7 @@ public abstract class AbstractShiroConfiguration{
 
     public abstract ShiroFilterChainProperties getFilterChainProperties();
 
-    public abstract JwtUtils getJwtUtils();
+    public abstract JwtUtilImpl getJwtUtils();
 
     public ShiroFilterChainDefinition shiroFilterChainDefinition() {
 

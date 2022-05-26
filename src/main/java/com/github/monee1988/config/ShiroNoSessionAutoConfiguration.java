@@ -1,7 +1,8 @@
 package com.github.monee1988.config;
 
+import com.github.monee1988.jwt.JwtUtil;
 import com.github.monee1988.jwt.JwtUtilProperties;
-import com.github.monee1988.jwt.JwtUtils;
+import com.github.monee1988.jwt.impl.JwtUtilImpl;
 import com.github.monee1988.shiro.CustomSessionManager;
 import com.github.monee1988.shiro.NoSessionDefaultSubjectFactory;
 import com.github.monee1988.shiro.ShiroFilterChainProperties;
@@ -55,14 +56,16 @@ public class ShiroNoSessionAutoConfiguration extends AbstractShiroConfiguration{
      */
     @Bean
     @ConditionalOnProperty(name = "shiro.web.session.enabled", havingValue = "false")
+    @ConditionalOnMissingBean
     public SubjectFactory subjectFactory(){
         return new NoSessionDefaultSubjectFactory();
     }
 
     @Bean
-    public JwtUtils jwtUtils(){
+    @ConditionalOnMissingBean
+    public JwtUtil jwtUtil(){
 
-        return new JwtUtils(jwtUtilProperties.getExpireTime(),jwtUtilProperties.getTokenSecret());
+        return new JwtUtilImpl(jwtUtilProperties.getExpireTime(),jwtUtilProperties.getTokenSecret());
     }
 
     /**
@@ -72,6 +75,7 @@ public class ShiroNoSessionAutoConfiguration extends AbstractShiroConfiguration{
      */
     @Bean
     @ConditionalOnProperty(name = "shiro.web.session.enabled", havingValue = "false")
+    @ConditionalOnMissingBean
     public SubjectDAO subjectDAO() {
         DefaultSubjectDAO subjectDAO = new DefaultSubjectDAO();
         DefaultSessionStorageEvaluator defaultSessionStorageEvaluator = new DefaultSessionStorageEvaluator();
@@ -89,6 +93,7 @@ public class ShiroNoSessionAutoConfiguration extends AbstractShiroConfiguration{
      */
     @Bean
     @ConditionalOnProperty(name = "shiro.web.session.enabled", havingValue = "true")
+    @ConditionalOnMissingBean
     public DefaultWebSessionManager sessionManager(){
         DefaultWebSessionManager sessionManager = new CustomSessionManager();
         sessionManager.setSessionDAO(sessionDAO());
@@ -100,6 +105,7 @@ public class ShiroNoSessionAutoConfiguration extends AbstractShiroConfiguration{
 
     @Bean
     @ConditionalOnProperty(name = "shiro.web.session.enabled", havingValue = "true")
+    @ConditionalOnMissingBean
     public SessionDAO sessionDAO() {
         if(redisSessionDAO!=null){
             return redisSessionDAO;
@@ -109,6 +115,7 @@ public class ShiroNoSessionAutoConfiguration extends AbstractShiroConfiguration{
 
     @Bean
     @ConditionalOnProperty(name = {"shiro.cache.enabled"},matchIfMissing = true)
+    @ConditionalOnMissingBean
     @Override
     public CacheManager cacheManager() {
         if(redisCacheManager!=null){
@@ -131,8 +138,8 @@ public class ShiroNoSessionAutoConfiguration extends AbstractShiroConfiguration{
 
     @Override
     @Bean
-    public JwtUtils getJwtUtils() {
-        return new JwtUtils(jwtUtilProperties.getExpireTime(), jwtUtilProperties.getTokenSecret());
+    public JwtUtilImpl getJwtUtils() {
+        return new JwtUtilImpl(jwtUtilProperties.getExpireTime(), jwtUtilProperties.getTokenSecret());
     }
 
     @Bean
